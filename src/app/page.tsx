@@ -82,7 +82,7 @@ const GlassCard = styled.div`
 `;
 
 const LogoContainer = styled.div`
-  position: fixed;
+  position: absolute;
   left: 50%;
   bottom: 80px; // Navbar'ın hemen üstü
   transform: translateX(-50%);
@@ -610,7 +610,7 @@ const TokenSelectorButton = styled.button`
 
 const BottomNavigation = styled.div`
   position: fixed;
-  bottom: 20px;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(26, 26, 46, 0.95);
