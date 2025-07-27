@@ -918,13 +918,16 @@ export default function Home() {
   const [showFromTokenSelector, setShowFromTokenSelector] = useState(false);
   const [showToTokenSelector, setShowToTokenSelector] = useState(false);
 
-  // Close token selectors when clicking outside
+  // Close token selectors and settings when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (!target.closest('.token-selector-container')) {
         setShowFromTokenSelector(false);
         setShowToTokenSelector(false);
+      }
+      if (!target.closest('.settings-container')) {
+        setSettingsOpen(false);
       }
     };
 
@@ -1349,7 +1352,7 @@ export default function Home() {
         
         {/* Settings Panel */}
         {settingsOpen && (
-          <SettingsPanel>
+          <SettingsPanel className="settings-container">
             <SettingsRow>
               <SettingsLabel>
                 Max slippage
