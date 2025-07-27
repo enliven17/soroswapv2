@@ -18,8 +18,8 @@ const PageContainer = styled.div`
 const Canvas = styled.canvas`
   position: fixed;
   top: 0;
-  left: 0;
-  width: 100vw;
+  left: -100px; /* Sol tarafa ekstra alan */
+  width: calc(100vw + 200px); /* Sağ ve sol için ekstra alan */
   height: 100vh;
   z-index: 0;
 `;
@@ -308,7 +308,9 @@ export default function Home() {
     let h = window.innerHeight;
     let nt = 0;
 
-    canvas.width = w;
+    // Canvas'ı biraz daha büyük yap (ekranın dışına uzansın)
+    const extraWidth = 200; // Sağ ve sol için ekstra alan
+    canvas.width = w + extraWidth;
     canvas.height = h;
 
     const waveColors = ["#38bdf8", "#818cf8", "#c084fc", "#e879f9", "#22d3ee"];
@@ -316,16 +318,17 @@ export default function Home() {
     const render = () => {
       ctx.fillStyle = "black";
       ctx.globalAlpha = 0.5;
-      ctx.fillRect(0, 0, w, h);
+      ctx.fillRect(0, 0, w + extraWidth, h);
       
       nt += 0.002;
       for (let i = 0; i < 5; i++) {
         ctx.beginPath();
         ctx.lineWidth = 50;
         ctx.strokeStyle = waveColors[i % waveColors.length];
-        for (let x = 0; x < w; x += 5) {
+        // Dalgaları ekranın dışına da çiz
+        for (let x = -extraWidth/2; x < w + extraWidth/2; x += 5) {
           const y = noise(x / 800, 0.3 * i, nt) * 100;
-          ctx.lineTo(x, y + h * 0.5);
+          ctx.lineTo(x + extraWidth/2, y + h * 0.5);
         }
         ctx.stroke();
         ctx.closePath();
@@ -336,7 +339,7 @@ export default function Home() {
     const handleResize = () => {
       w = window.innerWidth;
       h = window.innerHeight;
-      canvas.width = w;
+      canvas.width = w + extraWidth;
       canvas.height = h;
     };
 
