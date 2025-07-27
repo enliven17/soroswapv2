@@ -84,7 +84,7 @@ const GlassCard = styled.div`
 const LogoContainer = styled.div`
   position: absolute;
   left: 50%;
-  bottom: 80px; // Navbar'ın hemen üstü
+  bottom: 120px; // Navbar'ın hemen üstü
   transform: translateX(-50%);
   display: flex;
   justify-content: center;

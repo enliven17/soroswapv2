@@ -3,8 +3,11 @@ import "./globals.css";
 import { WalletProvider } from "@/contexts/WalletContext";
 
 export const metadata: Metadata = {
-  title: "Soroswap - Swap Interface",
+  title: "Soroswap",
   description: "Modern cryptocurrency swap interface",
+  icons: {
+    icon: '/soroswap-logo.svg',
+  },
 };
 
 export default function RootLayout({
