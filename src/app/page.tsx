@@ -1,32 +1,27 @@
 "use client";
 
 import styled from 'styled-components';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaExchangeAlt, FaCog, FaQuestionCircle, FaChevronDown } from 'react-icons/fa';
-import { Waves } from '@/components/ui/waves-background';
+import { createNoise3D } from "simplex-noise";
 
-const PageBg = styled.div`
+const PageContainer = styled.div`
   min-height: 100vh;
-  height: 100vh;
-  background: linear-gradient(120deg, #f8fafc 0%, #e9eafc 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden;
+  background: black;
   padding: 20px;
 `;
 
-const WavesContainer = styled.div`
+const Canvas = styled.canvas`
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 1;
-  pointer-events: none;
+  z-index: 0;
 `;
 
 const GlassCard = styled.div`
@@ -240,24 +235,64 @@ export default function Home() {
   const [maxSlippage, setMaxSlippage] = useState('Auto');
   const [maxHops, setMaxHops] = useState('2');
   const [protocol, setProtocol] = useState('Soroban');
+  
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const noise = createNoise3D();
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+    let nt = 0;
+
+    canvas.width = w;
+    canvas.height = h;
+
+    const waveColors = ["#38bdf8", "#818cf8", "#c084fc", "#e879f9", "#22d3ee"];
+
+    const render = () => {
+      ctx.fillStyle = "black";
+      ctx.globalAlpha = 0.5;
+      ctx.fillRect(0, 0, w, h);
+      
+      nt += 0.002;
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.lineWidth = 50;
+        ctx.strokeStyle = waveColors[i % waveColors.length];
+        for (let x = 0; x < w; x += 5) {
+          const y = noise(x / 800, 0.3 * i, nt) * 100;
+          ctx.lineTo(x, y + h * 0.5);
+        }
+        ctx.stroke();
+        ctx.closePath();
+      }
+      requestAnimationFrame(render);
+    };
+
+    const handleResize = () => {
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = w;
+      canvas.height = h;
+    };
+
+    window.addEventListener('resize', handleResize);
+    render();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   return (
-    <PageBg>
-      <WavesContainer>
-        <Waves
-          lineColor="rgba(59, 130, 246, 0.3)"
-          backgroundColor="transparent"
-          waveSpeedX={0.015}
-          waveSpeedY={0.008}
-          waveAmpX={60}
-          waveAmpY={30}
-          friction={0.92}
-          tension={0.008}
-          maxCursorMove={150}
-          xGap={8}
-          yGap={24}
-        />
-      </WavesContainer>
+    <PageContainer>
+      <Canvas ref={canvasRef} />
       <GlassCard>
         <Header>
           <Title>Swap</Title>
@@ -336,6 +371,6 @@ export default function Home() {
         </SwapIconBox>
         <SwapButton>Swap</SwapButton>
       </GlassCard>
-    </PageBg>
+    </PageContainer>
   );
 }
