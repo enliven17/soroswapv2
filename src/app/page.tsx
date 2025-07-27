@@ -1242,53 +1242,82 @@ export default function Home() {
         {/* Balance View */}
         {activeTab === 'balance' && (
           <BalanceView>
-            <BalanceTitle>Your token's balance:</BalanceTitle>
-            
-            <NetworkToggle>
-              <ToggleButton 
-                active={networkType === 'wrapped'} 
-                onClick={() => setNetworkType('wrapped')}
-              >
-                Wrapped
-              </ToggleButton>
-              <ToggleButton 
-                active={networkType === 'classic'} 
-                onClick={() => setNetworkType('classic')}
-              >
-                Stellar Classic
-              </ToggleButton>
-            </NetworkToggle>
-            
-            <TokenTable>
-              <TableHeader>
-                <div>#</div>
-                <div>Token</div>
-                <div>Address</div>
-                <div>Type</div>
-                <div>Balance</div>
-              </TableHeader>
-              
-              {balanceData.map((token, index) => (
-                <TableRow key={token.id}>
-                  <div>{index + 1}</div>
-                  <TokenCell>
-                    <TokenIcon>
-                      <img src={token.logo.src} alt={token.token} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </TokenIcon>
-                    {token.token}
-                  </TokenCell>
-                  <AddressCell>{token.address}</AddressCell>
-                  <TypeCell type={token.type}>
-                    {token.type === 'native' ? 'Native' : 'Soroban Token'}
-                  </TypeCell>
-                  <BalanceCell>{token.balance}</BalanceCell>
-                </TableRow>
-              ))}
-            </TokenTable>
-            
-            <MintButton>
-              Mint test tokens
-            </MintButton>
+            {isConnected ? (
+              <>
+                <BalanceTitle>Your token's balance:</BalanceTitle>
+                
+                <NetworkToggle>
+                  <ToggleButton 
+                    active={networkType === 'wrapped'} 
+                    onClick={() => setNetworkType('wrapped')}
+                  >
+                    Wrapped
+                  </ToggleButton>
+                  <ToggleButton 
+                    active={networkType === 'classic'} 
+                    onClick={() => setNetworkType('classic')}
+                  >
+                    Stellar Classic
+                  </ToggleButton>
+                </NetworkToggle>
+                
+                <TokenTable>
+                  <TableHeader>
+                    <div>#</div>
+                    <div>Token</div>
+                    <div>Address</div>
+                    <div>Type</div>
+                    <div>Balance</div>
+                  </TableHeader>
+                  
+                  {balanceData.map((token, index) => (
+                    <TableRow key={token.id}>
+                      <div>{index + 1}</div>
+                      <TokenCell>
+                        <TokenIcon>
+                          <img src={token.logo.src} alt={token.token} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </TokenIcon>
+                        {token.token}
+                      </TokenCell>
+                      <AddressCell>{token.address}</AddressCell>
+                      <TypeCell type={token.type}>
+                        {token.type === 'native' ? 'Native' : 'Soroban Token'}
+                      </TypeCell>
+                      <BalanceCell>{token.balance}</BalanceCell>
+                    </TableRow>
+                  ))}
+                </TokenTable>
+                
+                <MintButton>
+                  Mint test tokens
+                </MintButton>
+              </>
+            ) : (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '40px 20px',
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '1.1rem'
+              }}>
+                <FaWallet size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                <div style={{ marginBottom: '8px', fontWeight: '600' }}>Connect your wallet</div>
+                <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                  Go to{' '}
+                  <span 
+                    onClick={() => setActiveTab('swap')}
+                    style={{ 
+                      color: '#667eea', 
+                      cursor: 'pointer', 
+                      fontWeight: '600',
+                      textDecoration: 'underline'
+                    }}
+                  >
+                    Swap
+                  </span>
+                  {' '}tab and connect your Stellar wallet to view your token balances
+                </div>
+              </div>
+            )}
           </BalanceView>
         )}
         
@@ -1537,14 +1566,43 @@ export default function Home() {
                  {/* Pools View */}
          {activeTab === 'pools' && (
            <PoolsView>
-             <PoolsTitle>Your liquidity</PoolsTitle>
-             <PoolsSubtitle>List of your liquidity positions</PoolsSubtitle>
-             <NoLiquidityMessage>
-               No liquidity found.
-             </NoLiquidityMessage>
-             <AddLiquidityButton>
-               + Add Liquidity
-             </AddLiquidityButton>
+             {isConnected ? (
+               <>
+                 <PoolsTitle>Your liquidity</PoolsTitle>
+                 <PoolsSubtitle>List of your liquidity positions</PoolsSubtitle>
+                 <NoLiquidityMessage>
+                   No liquidity found.
+                 </NoLiquidityMessage>
+                 <AddLiquidityButton>
+                   + Add Liquidity
+                 </AddLiquidityButton>
+               </>
+             ) : (
+               <div style={{ 
+                 textAlign: 'center', 
+                 padding: '40px 20px',
+                 color: 'rgba(255, 255, 255, 0.7)',
+                 fontSize: '1.1rem'
+               }}>
+                 <FaQuestionCircle size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                 <div style={{ marginBottom: '8px', fontWeight: '600' }}>Connect your wallet</div>
+                 <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                   Go to{' '}
+                   <span 
+                     onClick={() => setActiveTab('swap')}
+                     style={{ 
+                       color: '#667eea', 
+                       cursor: 'pointer', 
+                       fontWeight: '600',
+                       textDecoration: 'underline'
+                     }}
+                   >
+                     Swap
+                   </span>
+                   {' '}tab and connect your Stellar wallet to view your liquidity positions
+                 </div>
+               </div>
+             )}
            </PoolsView>
          )}
 
