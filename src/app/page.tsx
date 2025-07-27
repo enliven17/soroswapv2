@@ -655,7 +655,7 @@ const NavText = styled.span<{ $active?: boolean }>`
 
 const BalanceView = styled.div`
   width: 100%;
-  margin-top: 20px;
+  margin-top: 16px;
   animation: fadeIn 0.2s ease-in-out;
 `;
 
@@ -798,8 +798,8 @@ const TokenTable = styled.div`
 const TableHeader = styled.div`
   display: grid;
   grid-template-columns: 40px 1fr 1fr 1fr 1fr;
-  gap: 16px;
-  padding: 16px;
+  gap: 12px;
+  padding: 12px;
   background: rgba(255, 255, 255, 0.1);
   font-size: 0.8rem;
   font-weight: 600;
@@ -809,8 +809,8 @@ const TableHeader = styled.div`
 const TableRow = styled.div`
   display: grid;
   grid-template-columns: 40px 1fr 1fr 1fr 1fr;
-  gap: 16px;
-  padding: 16px;
+  gap: 12px;
+  padding: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   align-items: center;
   
@@ -872,13 +872,13 @@ const MintButton = styled.button`
   background: linear-gradient(135deg, #8A2BE2 0%, #9370DB 100%);
   border: none;
   border-radius: 12px;
-  padding: 12px 24px;
+  padding: 10px 20px;
   color: white;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 16px;
+  margin-top: 12px;
   
   &:hover {
     transform: translateY(-2px);
