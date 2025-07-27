@@ -6,12 +6,12 @@ import { FaExchangeAlt, FaCog, FaQuestionCircle, FaChevronDown, FaWallet, FaSign
 import { BiTransfer } from 'react-icons/bi';
 import { createNoise3D } from "simplex-noise";
 import { useWallet } from '@/contexts/WalletContext';
+import type { StaticImageData } from 'next/image';
 import xlmLogo from './stellar-xlm-logo.png';
 import xrpLogo from './xrp-xrp-logo.png';
 import xtarLogo from './xtar.png';
 import usdcLogo from './usdc.png';
 import arstLogo from './arst.png';
-import aquaLogo from './aqua.png';
 
 
 // CoinGecko API types
@@ -32,7 +32,7 @@ interface TokenData {
 interface Token {
   symbol: string;
   name: string;
-  logo: string | any; // Accept both string and StaticImageData
+  logo: string | StaticImageData; // Accept both string and StaticImageData
   price: number;
 }
 
@@ -45,6 +45,7 @@ const PageContainer = styled.div`
   position: relative;
   background: black;
   padding: 20px;
+  padding-bottom: 120px; // Logo ve navbar çakışmasın diye
 `;
 
 const Canvas = styled.canvas`
@@ -81,11 +82,14 @@ const GlassCard = styled.div`
 `;
 
 const LogoContainer = styled.div`
+  position: fixed;
+  left: 50%;
+  bottom: 80px; // Navbar'ın hemen üstü
+  transform: translateX(-50%);
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 80px 0 20px 0;
-  z-index: 20;
+  z-index: 30;
 `;
 
 const Logo = styled.img`
@@ -885,7 +889,7 @@ const MintButton = styled.button`
 
 export default function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [maxSlippage, setMaxSlippage] = useState('Auto');
+
   const [slippageMode, setSlippageMode] = useState<'auto' | 'custom'>('auto');
   const [customSlippage, setCustomSlippage] = useState('1');
   const [slippageExpanded, setSlippageExpanded] = useState(false);
@@ -975,7 +979,7 @@ export default function Home() {
     }
   ];
   
-  const { isConnected, publicKey, connect, disconnect, isLoading, network, setNetwork } = useWallet();
+  const { isConnected, publicKey, connect, disconnect, isLoading } = useWallet();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Fetch prices on component mount
@@ -1265,7 +1269,7 @@ export default function Home() {
           <BalanceView>
             {isConnected ? (
               <>
-                <BalanceTitle>Your token's balance:</BalanceTitle>
+                <BalanceTitle>Your token&apos;s balance:</BalanceTitle>
                 
                 <NetworkToggle>
                   <ToggleButton 
