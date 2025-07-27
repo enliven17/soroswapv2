@@ -25,20 +25,27 @@ const Canvas = styled.canvas`
 `;
 
 const GlassCard = styled.div`
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 40px 32px;
-  max-width: 480px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 48px 40px;
+  max-width: 520px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
   z-index: 10;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
 `;
 
 const Header = styled.div`
@@ -46,49 +53,56 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
 `;
 
 const Title = styled.h2`
-  font-size: 2rem;
-  font-weight: 600;
-  color: #222;
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin: 0;
+  letter-spacing: -0.5px;
 `;
 
 const SettingsButton = styled.button`
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
   border: none;
-  border-radius: 12px;
-  padding: 12px;
-  color: #666;
+  border-radius: 16px;
+  padding: 16px;
+  color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
   
   &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    color: #333;
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+    transform: scale(1.05);
   }
 `;
 
 const SettingsPanel = styled.div`
   position: absolute;
-  top: 80px;
+  top: 100px;
   right: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 20px;
-  min-width: 280px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 24px;
+  min-width: 300px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   z-index: 50;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
 const SettingsRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
+  padding: 16px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   
   &:last-child {
@@ -99,134 +113,178 @@ const SettingsRow = styled.div`
 const SettingsLabel = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
   font-weight: 500;
 `;
 
 const SettingsButton2 = styled.button`
   background: rgba(255, 255, 255, 0.1);
-  border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
-  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 8px 16px;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   
   &:hover {
     background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
   }
 `;
 
 const SettingsInput = styled.input`
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  padding: 6px 10px;
-  color: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 14px;
-  width: 60px;
+  width: 70px;
   text-align: center;
   
   &:focus {
     outline: none;
-    border-color: #6b7cff;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.15);
   }
 `;
 
 const SwapRow = styled.div`
   display: flex;
-  gap: 16px;
+  gap: 20px;
   width: 100%;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
 `;
 
 const SwapBox = styled.div<{ color: string }>`
   flex: 1;
-  background: rgba(255,255,255,0.6);
-  border: 2px solid ${({ color }) => color};
-  border-radius: 16px;
-  padding: 20px 18px 16px 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid ${({ color }) => color}40;
+  border-radius: 20px;
+  padding: 24px 20px 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  
+  &:hover {
+    border-color: ${({ color }) => color}80;
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+  }
 `;
 
 const Label = styled.div`
-  font-size: 0.95rem;
-  color: #555;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: 4px;
   display: flex;
   align-items: center;
   gap: 8px;
+  font-weight: 500;
 `;
 
 const TokenRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 `;
 
 const TokenLogo = styled.div`
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: #eee;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 `;
 
 const TokenName = styled.span`
   font-weight: 600;
-  color: #222;
+  color: white;
+  font-size: 1.1rem;
 `;
 
 const Amount = styled.input`
   width: 100%;
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   font-weight: 600;
   border: none;
   background: transparent;
   outline: none;
-  color: #23243a;
+  color: white;
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
 `;
 
 const SubInfo = styled.div`
-  font-size: 0.9rem;
-  color: #888;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
 `;
 
 const SwapIconBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 32px;
-  margin-bottom: 32px;
+  margin: 40px 0;
+`;
+
+const SwapIconButton = styled.button`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  
+  &:hover {
+    transform: scale(1.1) rotate(180deg);
+    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+  }
 `;
 
 const SwapButton = styled.button`
   width: 100%;
-  padding: 18px 0;
-  margin-top: 8px;
+  padding: 20px 0;
+  margin-top: 16px;
   border: none;
-  border-radius: 16px;
-  background: linear-gradient(90deg, #23243a 0%, #3b3c5a 100%);
-  color: #fff;
-  font-size: 1.2rem;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 1.3rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 8px 0 rgba(31, 38, 135, 0.10);
-  transition: background 0.2s;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
   
   &:hover {
-    background: linear-gradient(90deg, #3b3c5a 0%, #23243a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+  }
+  
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -367,7 +425,9 @@ export default function Home() {
           </SwapBox>
         </SwapRow>
         <SwapIconBox>
-          <FaExchangeAlt size={28} color="#bbb" />
+          <SwapIconButton>
+            <FaExchangeAlt size={24} color="white" />
+          </SwapIconButton>
         </SwapIconBox>
         <SwapButton>Swap</SwapButton>
       </GlassCard>
