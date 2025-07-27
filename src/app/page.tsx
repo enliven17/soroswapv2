@@ -2,8 +2,24 @@
 
 import styled from 'styled-components';
 import { useState, useEffect, useRef } from 'react';
-import { FaExchangeAlt, FaCog, FaQuestionCircle, FaChevronDown } from 'react-icons/fa';
+import { FaExchangeAlt, FaCog, FaQuestionCircle, FaChevronDown, FaWallet, FaSignOutAlt } from 'react-icons/fa';
 import { createNoise3D } from "simplex-noise";
+import { useWallet } from '@/contexts/WalletContext';
+
+// CoinGecko API types
+interface TokenPrice {
+  [key: string]: {
+    usd: number;
+    usd_24h_change: number;
+  };
+}
+
+interface TokenData {
+  xlm: number;
+  xrp: number;
+  xlmToXrp: number;
+  xrpToXlm: number;
+}
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -288,13 +304,94 @@ const SwapButton = styled.button`
   }
 `;
 
+const WalletButton = styled.button`
+  width: 100%;
+  padding: 20px 0;
+  margin-top: 16px;
+  border: none;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const DisconnectButton = styled.button`
+  width: 100%;
+  padding: 16px 0;
+  margin-top: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+  }
+`;
+
+
+
 export default function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [maxSlippage, setMaxSlippage] = useState('Auto');
   const [maxHops, setMaxHops] = useState('2');
   const [protocol, setProtocol] = useState('Soroban');
+  const [tokenData, setTokenData] = useState<TokenData>({
+    xlm: 0,
+    xrp: 0,
+    xlmToXrp: 0,
+    xrpToXlm: 0
+  });
+  const [fromAmount, setFromAmount] = useState('');
+  const [toAmount, setToAmount] = useState('');
+  const [isLoadingPrices, setIsLoadingPrices] = useState(true);
   
+  const { isConnected, publicKey, connect, disconnect, isLoading, network, setNetwork } = useWallet();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Fetch prices on component mount
+  useEffect(() => {
+    fetchTokenPrices();
+    
+    // Refresh prices every 30 seconds
+    const interval = setInterval(fetchTokenPrices, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -351,15 +448,153 @@ export default function Home() {
     };
   }, []);
 
+  const formatAddress = (address: string) => {
+    if (address.length <= 12) return address;
+    return `${address.slice(0, 6)}...${address.slice(-6)}`;
+  };
+
+  // Fetch token prices from CoinGecko
+  const fetchTokenPrices = async () => {
+    try {
+      setIsLoadingPrices(true);
+      console.log('Fetching prices from CoinGecko...');
+      
+      // Try alternative endpoint for more accurate prices
+      const response = await fetch(
+        'https://api.coingecko.com/api/v3/simple/price?ids=stellar,ripple&vs_currencies=usd&precision=6'
+      );
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data: TokenPrice = await response.json();
+      console.log('Raw CoinGecko response:', data);
+      
+      const xlmPrice = data.stellar?.usd || 0;
+      const xrpPrice = data.ripple?.usd || 0;
+      
+      console.log('Parsed prices:', { xlmPrice, xrpPrice });
+      
+      // Validate prices are reasonable
+      if (xlmPrice < 0.01 || xlmPrice > 10 || xrpPrice < 0.01 || xrpPrice > 10) {
+        console.warn('Prices seem unreasonable, using fallback');
+        throw new Error('Unreasonable prices received');
+      }
+      
+      // Calculate conversion rates
+      const xlmToXrp = xlmPrice > 0 ? xrpPrice / xlmPrice : 0;
+      const xrpToXlm = xrpPrice > 0 ? xlmPrice / xrpPrice : 0;
+      
+      setTokenData({
+        xlm: xlmPrice,
+        xrp: xrpPrice,
+        xlmToXrp,
+        xrpToXlm
+      });
+      
+      console.log('Token prices updated:', { xlmPrice, xrpPrice, xlmToXrp, xrpToXlm });
+    } catch (error) {
+      console.error('Error fetching token prices:', error);
+      // Fallback to demo prices
+      setTokenData({
+        xlm: 0.125,
+        xrp: 0.49,
+        xlmToXrp: 3.92,
+        xrpToXlm: 0.255
+      });
+    } finally {
+      setIsLoadingPrices(false);
+    }
+  };
+
+  // Calculate amounts based on input
+  const calculateAmount = (amount: string, isFrom: boolean) => {
+    if (!amount || isNaN(Number(amount))) return '';
+    
+    const numAmount = Number(amount);
+    console.log('Calculating with prices:', { 
+      xlmPrice: tokenData.xlm, 
+      xrpPrice: tokenData.xrp, 
+      amount: numAmount, 
+      isFrom 
+    });
+    
+    if (isFrom) {
+      // Calculate XLM to XRP using real prices
+      // XLM amount * XLM price / XRP price = XRP amount
+      const xlmValue = numAmount * tokenData.xlm;
+      const xrpAmount = xlmValue / tokenData.xrp;
+      console.log('XLM to XRP calculation:', { xlmValue, xrpAmount });
+      return xrpAmount.toFixed(2);
+    } else {
+      // Calculate XRP to XLM using real prices
+      // XRP amount * XRP price / XLM price = XLM amount
+      const xrpValue = numAmount * tokenData.xrp;
+      const xlmAmount = xrpValue / tokenData.xlm;
+      console.log('XRP to XLM calculation:', { xrpValue, xlmAmount });
+      return xlmAmount.toFixed(2);
+    }
+  };
+
+  // Handle amount changes
+  const handleFromAmountChange = (value: string) => {
+    setFromAmount(value);
+    const calculated = calculateAmount(value, true);
+    setToAmount(calculated);
+  };
+
+  const handleToAmountChange = (value: string) => {
+    setToAmount(value);
+    const calculated = calculateAmount(value, false);
+    setFromAmount(calculated);
+  };
+
+  // Handle swap button click
+  const handleSwap = () => {
+    if (!fromAmount || !toAmount) {
+      alert('Please enter amounts to swap');
+      return;
+    }
+    
+    // Clear inputs after swap
+    setFromAmount('');
+    setToAmount('');
+    
+    console.log(`Swapping ${fromAmount} XLM for ${toAmount} XRP`);
+    // Here you would implement the actual swap logic
+  };
+
   return (
     <PageContainer>
       <Canvas ref={canvasRef} />
       <GlassCard>
         <Header>
           <Title>Swap</Title>
-          <SettingsButton onClick={() => setSettingsOpen(!settingsOpen)}>
-            <FaCog size={20} />
-          </SettingsButton>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {isConnected && (
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px',
+                fontSize: '0.8rem',
+                color: '#4ade80',
+                fontWeight: '500'
+              }}>
+                <div style={{
+                  width: '6px',
+                  height: '6px',
+                  background: '#4ade80',
+                  borderRadius: '50%',
+                  animation: 'pulse 2s infinite'
+                }} />
+                {formatAddress(publicKey || '')}
+              </div>
+            )}
+            <SettingsButton onClick={() => setSettingsOpen(!settingsOpen)}>
+              <FaCog size={20} />
+            </SettingsButton>
+          </div>
         </Header>
         
         {/* Settings Panel */}
@@ -400,31 +635,60 @@ export default function Home() {
                 <FaChevronDown size={10} />
               </SettingsButton2>
             </SettingsRow>
+            
+            <SettingsRow>
+              <SettingsLabel>
+                Network
+                <FaQuestionCircle size={12} />
+              </SettingsLabel>
+              <SettingsButton2 onClick={() => setNetwork(network === 'testnet' ? 'public' : 'testnet')}>
+                {network === 'testnet' ? 'Testnet' : 'Public'}
+                <FaChevronDown size={10} />
+              </SettingsButton2>
+            </SettingsRow>
           </SettingsPanel>
         )}
 
         <SwapRow>
-          <SwapBox color="#f6b85c">
+          <SwapBox color="#00d4ff">
             <Label>
               From
             </Label>
             <TokenRow>
-              <TokenLogo>₿</TokenLogo>
-              <TokenName>BTC</TokenName>
+              <TokenLogo>★</TokenLogo>
+              <TokenName>XLM</TokenName>
             </TokenRow>
-            <Amount type="number" placeholder="1" min="0" step="any" />
-            <SubInfo>~66,625.78</SubInfo>
+            <Amount 
+              type="number" 
+              placeholder="100" 
+              min="0" 
+              step="any"
+              value={fromAmount}
+              onChange={(e) => handleFromAmountChange(e.target.value)}
+            />
+            <SubInfo>
+              {isLoadingPrices ? 'Loading...' : `~$${(Number(fromAmount) * tokenData.xlm).toFixed(2)}`}
+            </SubInfo>
           </SwapBox>
-          <SwapBox color="#6b7cff">
+          <SwapBox color="#23292f">
             <Label>
               To
             </Label>
             <TokenRow>
-              <TokenLogo>Ξ</TokenLogo>
-              <TokenName>ETH</TokenName>
+              <TokenLogo>⚡</TokenLogo>
+              <TokenName>XRP</TokenName>
             </TokenRow>
-            <Amount type="number" placeholder="19.265" min="0" step="any" />
-            <SubInfo>~66,422.78</SubInfo>
+            <Amount 
+              type="number" 
+              placeholder="25.5" 
+              min="0" 
+              step="any"
+              value={toAmount}
+              onChange={(e) => handleToAmountChange(e.target.value)}
+            />
+            <SubInfo>
+              {isLoadingPrices ? 'Loading...' : `~$${(Number(toAmount) * tokenData.xrp).toFixed(2)}`}
+            </SubInfo>
           </SwapBox>
         </SwapRow>
         <SwapIconBox>
@@ -432,7 +696,21 @@ export default function Home() {
             <FaExchangeAlt size={24} color="white" />
           </SwapIconButton>
         </SwapIconBox>
-        <SwapButton>Swap</SwapButton>
+        
+        {isConnected ? (
+          <>
+            <SwapButton onClick={handleSwap}>Swap</SwapButton>
+            <DisconnectButton onClick={disconnect}>
+              <FaSignOutAlt size={16} />
+              Disconnect Wallet
+            </DisconnectButton>
+          </>
+        ) : (
+          <WalletButton onClick={connect} disabled={isLoading}>
+            <FaWallet size={20} />
+            {isLoading ? 'Connecting...' : 'Connect Wallet'}
+          </WalletButton>
+        )}
       </GlassCard>
     </PageContainer>
   );
