@@ -1332,7 +1332,7 @@ export default function Home() {
                   <span 
                     onClick={() => setActiveTab('swap')}
                     style={{ 
-                      color: '#667eea', 
+                      color: 'white', 
                       cursor: 'pointer', 
                       fontWeight: '600',
                       textDecoration: 'underline'
@@ -1617,7 +1617,7 @@ export default function Home() {
                    <span 
                      onClick={() => setActiveTab('swap')}
                      style={{ 
-                       color: '#667eea', 
+                       color: 'white', 
                        cursor: 'pointer', 
                        fontWeight: '600',
                        textDecoration: 'underline'
