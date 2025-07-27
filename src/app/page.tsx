@@ -13,6 +13,7 @@ import usdcLogo from './usdc.png';
 import arstLogo from './arst.png';
 import aquaLogo from './aqua.png';
 
+
 // CoinGecko API types
 interface TokenPrice {
   [key: string]: {
@@ -76,6 +77,18 @@ const GlassCard = styled.div`
     box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.3);
   }
+`;
+
+const LogoContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+`;
+
+const Logo = styled.img`
+  height: 40px;
+  width: auto;
+  filter: brightness(1.1);
 `;
 
 const Header = styled.div`
@@ -1206,6 +1219,9 @@ export default function Home() {
       <GlobalStyle />
       <Canvas ref={canvasRef} />
       <GlassCard>
+        <LogoContainer>
+          <Logo src="/soroswap-logo.svg" alt="Soroswap" />
+        </LogoContainer>
         <Header>
           <Title>
             {activeTab === 'balance' ? 'Balance' : 
