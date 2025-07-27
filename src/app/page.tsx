@@ -39,6 +39,7 @@ interface Token {
 const PageContainer = styled.div`
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
@@ -82,13 +83,20 @@ const GlassCard = styled.div`
 const LogoContainer = styled.div`
   display: flex;
   justify-content: center;
-  margin-bottom: 24px;
+  align-items: center;
+  margin: 80px 0 20px 0;
+  z-index: 20;
 `;
 
 const Logo = styled.img`
   height: 40px;
   width: auto;
-  filter: brightness(1.1);
+  filter: brightness(1.5);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
 `;
 
 const Header = styled.div`
@@ -1219,9 +1227,6 @@ export default function Home() {
       <GlobalStyle />
       <Canvas ref={canvasRef} />
       <GlassCard>
-        <LogoContainer>
-          <Logo src="/soroswap-logo.svg" alt="Soroswap" />
-        </LogoContainer>
         <Header>
           <Title>
             {activeTab === 'balance' ? 'Balance' : 
@@ -1635,6 +1640,10 @@ export default function Home() {
 
          
       </GlassCard>
+
+      <LogoContainer>
+        <Logo src="/soroswap-logo.svg" alt="Soroswap" />
+      </LogoContainer>
 
       <BottomNavigation>
         <NavItem $active={activeTab === 'balance'} onClick={() => handleNavClick('balance')}>
