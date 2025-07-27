@@ -3,13 +3,30 @@
 import styled from 'styled-components';
 import { useState } from 'react';
 import { FaExchangeAlt, FaCog, FaQuestionCircle, FaChevronDown } from 'react-icons/fa';
+import { Waves } from '@/components/ui/waves-background';
 
 const PageBg = styled.div`
   min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(120deg, #f8fafc 0%, #e9eafc 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+`;
+
+const WavesContainer = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
 `;
 
 const GlassCard = styled.div`
@@ -26,6 +43,7 @@ const GlassCard = styled.div`
   flex-direction: column;
   align-items: center;
   position: relative;
+  z-index: 10;
 `;
 
 const Header = styled.div`
@@ -225,6 +243,21 @@ export default function Home() {
 
   return (
     <PageBg>
+      <WavesContainer>
+        <Waves
+          lineColor="rgba(59, 130, 246, 0.3)"
+          backgroundColor="transparent"
+          waveSpeedX={0.015}
+          waveSpeedY={0.008}
+          waveAmpX={60}
+          waveAmpY={30}
+          friction={0.92}
+          tension={0.008}
+          maxCursorMove={150}
+          xGap={8}
+          yGap={24}
+        />
+      </WavesContainer>
       <GlassCard>
         <Header>
           <Title>Swap</Title>
