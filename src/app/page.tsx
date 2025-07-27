@@ -8,6 +8,10 @@ import { createNoise3D } from "simplex-noise";
 import { useWallet } from '@/contexts/WalletContext';
 import xlmLogo from './stellar-xlm-logo.png';
 import xrpLogo from './xrp-xrp-logo.png';
+import xtarLogo from './xtar.png';
+import usdcLogo from './usdc.png';
+import arstLogo from './arst.png';
+import aquaLogo from './aqua.png';
 
 // CoinGecko API types
 interface TokenPrice {
@@ -181,6 +185,142 @@ const SettingsInput = styled.input`
   }
 `;
 
+const ProtocolList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: slideDown 0.3s ease-out;
+  
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
+const ProtocolItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+`;
+
+const ProtocolInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const ProtocolName = styled.span`
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+`;
+
+const ExternalLink = styled.span`
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  cursor: pointer;
+  
+  &:hover {
+    color: #667eea;
+  }
+`;
+
+const ToggleSwitch = styled.input.attrs({ type: 'checkbox' })`
+  appearance: none;
+  width: 40px;
+  height: 20px;
+  background: ${props => props.checked ? '#667eea' : 'rgba(255, 255, 255, 0.2)'};
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    top: 2px;
+    left: ${props => props.checked ? '22px' : '2px'};
+    transition: all 0.3s ease;
+  }
+`;
+
+const SlippageContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: slideDown 0.3s ease-out;
+`;
+
+const SlippageModeSelector = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+`;
+
+const ModeButton = styled.button<{ active: boolean }>`
+  padding: 8px 12px;
+  border: 1px solid ${props => props.active ? '#667eea' : 'rgba(255, 255, 255, 0.2)'};
+  border-radius: 8px;
+  background: ${props => props.active ? 'rgba(102, 126, 234, 0.2)' : 'transparent'};
+  color: ${props => props.active ? '#667eea' : 'rgba(255, 255, 255, 0.7)'};
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 60px;
+  
+  &:hover {
+    border-color: #667eea;
+    color: #667eea;
+  }
+`;
+
+const SlippageValueBox = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  width: 60px;
+  min-width: 60px;
+`;
+
+const SlippageInput = styled.input`
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  width: 60px;
+  min-width: 60px;
+  text-align: center;
+  
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+`;
+
 const SwapRow = styled.div`
   display: flex;
   gap: 20px;
@@ -227,20 +367,23 @@ const TokenLogo = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.4rem;
   color: white;
   font-weight: bold;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
   }
 `;
 
@@ -393,6 +536,18 @@ const TokenSelector = styled.div`
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   z-index: 50;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideDownFade 0.3s ease-out;
+  
+  @keyframes slideDownFade {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 `;
 
 const TokenOption = styled.div`
@@ -402,10 +557,11 @@ const TokenOption = styled.div`
   padding: 12px;
   border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   
   &:hover {
     background: rgba(255, 255, 255, 0.1);
+    transform: translateX(4px);
   }
 `;
 
@@ -416,13 +572,14 @@ const TokenSelectorButton = styled.button`
   padding: 8px 12px;
   color: white;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 8px;
   
   &:hover {
     background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.02);
   }
 `;
 
@@ -445,7 +602,7 @@ const BottomNavigation = styled.div`
   max-width: 400px;
 `;
 
-const NavItem = styled.div<{ active?: boolean }>`
+const NavItem = styled.div<{ $active?: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -454,19 +611,19 @@ const NavItem = styled.div<{ active?: boolean }>`
   transition: all 0.3s ease;
   padding: 8px 12px;
   border-radius: 16px;
-  background: ${props => props.active ? 'linear-gradient(135deg, #8A2BE2 0%, #9370DB 100%)' : 'transparent'};
+  background: ${props => props.$active ? 'linear-gradient(135deg, #8A2BE2 0%, #9370DB 100%)' : 'transparent'};
   min-width: 60px;
   
   &:hover {
-    background: ${props => props.active ? 'linear-gradient(135deg, #8A2BE2 0%, #9370DB 100%)' : 'rgba(255, 255, 255, 0.1)'};
+    background: ${props => props.$active ? 'linear-gradient(135deg, #8A2BE2 0%, #9370DB 100%)' : 'rgba(255, 255, 255, 0.1)'};
     transform: translateY(-2px);
   }
 `;
 
-const NavText = styled.span<{ active?: boolean }>`
+const NavText = styled.span<{ $active?: boolean }>`
   font-size: 0.75rem;
   font-weight: 600;
-  color: ${props => props.active ? 'white' : 'rgba(255, 255, 255, 0.7)'};
+  color: ${props => props.$active ? 'white' : 'rgba(255, 255, 255, 0.7)'};
   transition: all 0.3s ease;
   text-align: center;
 `;
@@ -474,6 +631,104 @@ const NavText = styled.span<{ active?: boolean }>`
 const BalanceView = styled.div`
   width: 100%;
   margin-top: 20px;
+  animation: fadeIn 0.2s ease-in-out;
+`;
+
+const SwapView = styled.div`
+  width: 100%;
+  animation: fadeIn 0.2s ease-in-out;
+`;
+
+const PoolsView = styled.div`
+  width: 100%;
+  animation: fadeIn 0.2s ease-in-out;
+`;
+
+const PoolsTitle = styled.h3`
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 8px 0;
+`;
+
+const PoolsSubtitle = styled.p`
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 32px 0;
+`;
+
+const NoLiquidityMessage = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1rem;
+`;
+
+const AddLiquidityButton = styled.button`
+  background: linear-gradient(135deg, #8A2BE2 0%, #9370DB 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 16px 32px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 24px;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
+  }
+`;
+
+const BridgeView = styled.div`
+  width: 100%;
+  animation: fadeIn 0.2s ease-in-out;
+`;
+
+const NotFoundContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  text-align: center;
+`;
+
+const NotFoundTitle = styled.h2`
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 16px 0;
+`;
+
+const NotFoundSubtitle = styled.h3`
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 8px 0;
+`;
+
+const NotFoundMessage = styled.p`
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+`;
+
+// Add keyframes for animations
+const GlobalStyle = styled.div`
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 `;
 
 const BalanceTitle = styled.h3`
@@ -556,8 +811,14 @@ const TokenIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
-  font-weight: bold;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 `;
 
 const AddressCell = styled.div`
@@ -604,8 +865,19 @@ const MintButton = styled.button`
 export default function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [maxSlippage, setMaxSlippage] = useState('Auto');
+  const [slippageMode, setSlippageMode] = useState<'auto' | 'custom'>('auto');
+  const [customSlippage, setCustomSlippage] = useState('1');
+  const [slippageExpanded, setSlippageExpanded] = useState(false);
   const [maxHops, setMaxHops] = useState('2');
   const [protocol, setProtocol] = useState('Soroban');
+  const [selectedNetwork, setSelectedNetwork] = useState('testnet');
+  const [protocols, setProtocols] = useState({
+    sdex: true,
+    soroswap: true,
+    phoenix: false,
+    aqua: true
+  });
+  const [protocolsExpanded, setProtocolsExpanded] = useState(false);
   const [tokenData, setTokenData] = useState<TokenData>({
     xlm: 0,
     xrp: 0,
@@ -619,6 +891,22 @@ export default function Home() {
   const [toToken, setToToken] = useState<Token>({ symbol: 'XRP', name: 'Ripple', logo: xrpLogo, price: 0 });
   const [showFromTokenSelector, setShowFromTokenSelector] = useState(false);
   const [showToTokenSelector, setShowToTokenSelector] = useState(false);
+
+  // Close token selectors when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.token-selector-container')) {
+        setShowFromTokenSelector(false);
+        setShowToTokenSelector(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
   const [activeTab, setActiveTab] = useState('swap');
   const [networkType, setNetworkType] = useState<'wrapped' | 'classic'>('classic');
 
@@ -627,15 +915,15 @@ export default function Home() {
     {
       id: 1,
       token: 'XLM',
-      icon: '★',
+      logo: xlmLogo,
       address: 'CDLZ...CYSC',
       type: 'native' as const,
-      balance: '19,768.0494256'
+      balance: '19,768.05'
     },
     {
       id: 2,
       token: 'XTAR',
-      icon: '⭐',
+      logo: xtarLogo,
       address: 'XTAR...1234',
       type: 'soroban' as const,
       balance: '0'
@@ -643,7 +931,7 @@ export default function Home() {
     {
       id: 3,
       token: 'USDC',
-      icon: '$',
+      logo: usdcLogo,
       address: 'USDC...5678',
       type: 'soroban' as const,
       balance: '0'
@@ -651,7 +939,7 @@ export default function Home() {
     {
       id: 4,
       token: 'XRP',
-      icon: '⚡',
+      logo: xrpLogo,
       address: 'XRP...9012',
       type: 'soroban' as const,
       balance: '0'
@@ -659,7 +947,7 @@ export default function Home() {
     {
       id: 5,
       token: 'ARST',
-      icon: '🔵',
+      logo: arstLogo,
       address: 'ARST...3456',
       type: 'soroban' as const,
       balance: '0'
@@ -902,6 +1190,12 @@ export default function Home() {
 
   // Handle navigation tab click
   const handleNavClick = (tab: string) => {
+    if (tab === 'info') {
+      // Open Dune link in new tab
+      window.open('https://dune.com/paltalabs/soroswap', '_blank');
+      return;
+    }
+    
     setActiveTab(tab);
     console.log(`Switched to ${tab} tab`);
     // Here you would implement navigation logic
@@ -909,10 +1203,16 @@ export default function Home() {
 
   return (
     <PageContainer>
+      <GlobalStyle />
       <Canvas ref={canvasRef} />
       <GlassCard>
         <Header>
-          <Title>{activeTab === 'balance' ? 'Balance' : 'Swap'}</Title>
+          <Title>
+            {activeTab === 'balance' ? 'Balance' : 
+             activeTab === 'pools' ? 'Pools' : 
+             activeTab === 'bridge' ? 'Bridge' :
+             activeTab === 'info' ? 'Info' : 'Swap'}
+          </Title>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {isConnected && (
               <div style={{ 
@@ -972,10 +1272,8 @@ export default function Home() {
                 <TableRow key={token.id}>
                   <div>{index + 1}</div>
                   <TokenCell>
-                    <TokenIcon style={{ 
-                      background: token.type === 'native' ? '#4CAF50' : '#2196F3' 
-                    }}>
-                      {token.icon}
+                    <TokenIcon>
+                      <img src={token.logo.src} alt={token.token} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </TokenIcon>
                     {token.token}
                   </TokenCell>
@@ -1002,11 +1300,41 @@ export default function Home() {
                 Max slippage
                 <FaQuestionCircle size={12} />
               </SettingsLabel>
-              <SettingsButton2 onClick={() => setMaxSlippage(maxSlippage === 'Auto' ? 'Manual' : 'Auto')}>
-                {maxSlippage}
-                <FaChevronDown size={10} />
+              <SettingsButton2 onClick={() => setSlippageExpanded(!slippageExpanded)}>
+                {slippageMode === 'auto' ? 'Auto' : `${customSlippage}%`}
+                <FaChevronDown size={10} style={{ transform: slippageExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />
               </SettingsButton2>
             </SettingsRow>
+            {slippageExpanded && (
+              <SlippageContainer>
+                <SlippageModeSelector>
+                  <ModeButton 
+                    active={slippageMode === 'auto'} 
+                    onClick={() => setSlippageMode('auto')}
+                  >
+                    Auto
+                  </ModeButton>
+                  <ModeButton 
+                    active={slippageMode === 'custom'} 
+                    onClick={() => setSlippageMode('custom')}
+                  >
+                    Custom
+                  </ModeButton>
+                  {slippageMode === 'auto' ? (
+                    <SlippageValueBox>1%</SlippageValueBox>
+                  ) : (
+                    <SlippageInput
+                      type="number"
+                      value={customSlippage}
+                      onChange={(e) => setCustomSlippage(e.target.value)}
+                      min="0.1"
+                      max="50"
+                      step="0.1"
+                    />
+                  )}
+                </SlippageModeSelector>
+              </SlippageContainer>
+            )}
             
             <SettingsRow>
               <SettingsLabel>
@@ -1038,19 +1366,77 @@ export default function Home() {
                 Network
                 <FaQuestionCircle size={12} />
               </SettingsLabel>
-              <SettingsButton2 onClick={() => setNetwork(network === 'testnet' ? 'public' : 'testnet')}>
-                {network === 'testnet' ? 'Testnet' : 'Public'}
+              <SettingsButton2 onClick={() => setSelectedNetwork(selectedNetwork === 'testnet' ? 'mainnet' : 'testnet')}>
+                {selectedNetwork === 'testnet' ? 'Testnet' : 'Mainnet'}
                 <FaChevronDown size={10} />
               </SettingsButton2>
             </SettingsRow>
+            
+            <SettingsRow>
+              <SettingsLabel>
+                Protocols
+                <FaQuestionCircle size={12} />
+              </SettingsLabel>
+              <SettingsButton2 onClick={() => setProtocolsExpanded(!protocolsExpanded)}>
+                {protocolsExpanded ? 'Hide' : 'Show'}
+                <FaChevronDown size={10} style={{ transform: protocolsExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />
+              </SettingsButton2>
+            </SettingsRow>
+            {protocolsExpanded && (
+              <ProtocolList>
+                <ProtocolItem>
+                  <ProtocolInfo>
+                    <ProtocolName>SDEX</ProtocolName>
+                    <ExternalLink>↗</ExternalLink>
+                  </ProtocolInfo>
+                  <ToggleSwitch 
+                    checked={protocols.sdex} 
+                    onChange={(e) => setProtocols({...protocols, sdex: e.target.checked})}
+                  />
+                </ProtocolItem>
+                
+                <ProtocolItem>
+                  <ProtocolInfo>
+                    <ProtocolName>Soroswap</ProtocolName>
+                    <ExternalLink>↗</ExternalLink>
+                  </ProtocolInfo>
+                  <ToggleSwitch 
+                    checked={protocols.soroswap} 
+                    onChange={(e) => setProtocols({...protocols, soroswap: e.target.checked})}
+                  />
+                </ProtocolItem>
+                
+                <ProtocolItem>
+                  <ProtocolInfo>
+                    <ProtocolName>Phoenix</ProtocolName>
+                    <ExternalLink>↗</ExternalLink>
+                  </ProtocolInfo>
+                  <ToggleSwitch 
+                    checked={protocols.phoenix} 
+                    onChange={(e) => setProtocols({...protocols, phoenix: e.target.checked})}
+                  />
+                </ProtocolItem>
+                
+                <ProtocolItem>
+                  <ProtocolInfo>
+                    <ProtocolName>Aqua</ProtocolName>
+                    <ExternalLink>↗</ExternalLink>
+                  </ProtocolInfo>
+                  <ToggleSwitch 
+                    checked={protocols.aqua} 
+                    onChange={(e) => setProtocols({...protocols, aqua: e.target.checked})}
+                  />
+                </ProtocolItem>
+              </ProtocolList>
+            )}
           </SettingsPanel>
         )}
 
         {/* Swap View */}
         {activeTab === 'swap' && (
-          <>
+          <SwapView>
             <SwapRow>
-          <SwapBox color="#00d4ff" style={{ position: 'relative' }}>
+          <SwapBox color="#00d4ff" style={{ position: 'relative' }} className="token-selector-container">
             <Label>
               From
             </Label>
@@ -1087,7 +1473,7 @@ export default function Home() {
               {isLoadingPrices ? 'Loading...' : `~$${(Number(fromAmount) * fromToken.price).toFixed(2)}`}
             </SubInfo>
           </SwapBox>
-          <SwapBox color="#23292f" style={{ position: 'relative' }}>
+          <SwapBox color="#23292f" style={{ position: 'relative' }} className="token-selector-container">
             <Label>
               To
             </Label>
@@ -1145,30 +1531,57 @@ export default function Home() {
             {isLoading ? 'Connecting...' : 'Connect Wallet'}
           </WalletButton>
         )}
-          </>
+          </SwapView>
         )}
+
+                 {/* Pools View */}
+         {activeTab === 'pools' && (
+           <PoolsView>
+             <PoolsTitle>Your liquidity</PoolsTitle>
+             <PoolsSubtitle>List of your liquidity positions</PoolsSubtitle>
+             <NoLiquidityMessage>
+               No liquidity found.
+             </NoLiquidityMessage>
+             <AddLiquidityButton>
+               + Add Liquidity
+             </AddLiquidityButton>
+           </PoolsView>
+         )}
+
+         {/* Bridge View */}
+         {activeTab === 'bridge' && (
+           <BridgeView>
+             <NotFoundContainer>
+               <NotFoundTitle>404</NotFoundTitle>
+               <NotFoundSubtitle>Page Not Found</NotFoundSubtitle>
+               <NotFoundMessage>The page you are looking for does not exist.</NotFoundMessage>
+             </NotFoundContainer>
+           </BridgeView>
+         )}
+
+         
       </GlassCard>
 
       <BottomNavigation>
-        <NavItem active={activeTab === 'balance'} onClick={() => handleNavClick('balance')}>
+        <NavItem $active={activeTab === 'balance'} onClick={() => handleNavClick('balance')}>
           <FaWallet size={20} />
-          <NavText active={activeTab === 'balance'}>Balance</NavText>
+          <NavText $active={activeTab === 'balance'}>Balance</NavText>
         </NavItem>
-        <NavItem active={activeTab === 'swap'} onClick={() => handleNavClick('swap')}>
+        <NavItem $active={activeTab === 'swap'} onClick={() => handleNavClick('swap')}>
           <FaExchangeAlt size={20} />
-          <NavText active={activeTab === 'swap'}>Swap</NavText>
+          <NavText $active={activeTab === 'swap'}>Swap</NavText>
         </NavItem>
-        <NavItem active={activeTab === 'pools'} onClick={() => handleNavClick('pools')}>
+        <NavItem $active={activeTab === 'pools'} onClick={() => handleNavClick('pools')}>
           <FaQuestionCircle size={20} />
-          <NavText active={activeTab === 'pools'}>Pools</NavText>
+          <NavText $active={activeTab === 'pools'}>Pools</NavText>
         </NavItem>
-        <NavItem active={activeTab === 'bridge'} onClick={() => handleNavClick('bridge')}>
+        <NavItem $active={activeTab === 'bridge'} onClick={() => handleNavClick('bridge')}>
           <BiTransfer size={20} />
-          <NavText active={activeTab === 'bridge'}>Bridge</NavText>
+          <NavText $active={activeTab === 'bridge'}>Bridge</NavText>
         </NavItem>
-        <NavItem active={activeTab === 'info'} onClick={() => handleNavClick('info')}>
+        <NavItem $active={activeTab === 'info'} onClick={() => handleNavClick('info')}>
           <FaInfoCircle size={20} />
-          <NavText active={activeTab === 'info'}>Info</NavText>
+          <NavText $active={activeTab === 'info'}>Info</NavText>
         </NavItem>
       </BottomNavigation>
     </PageContainer>
