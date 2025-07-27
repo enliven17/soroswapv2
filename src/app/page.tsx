@@ -2,9 +2,12 @@
 
 import styled from 'styled-components';
 import { useState, useEffect, useRef } from 'react';
-import { FaExchangeAlt, FaCog, FaQuestionCircle, FaChevronDown, FaWallet, FaSignOutAlt } from 'react-icons/fa';
+import { FaExchangeAlt, FaCog, FaQuestionCircle, FaChevronDown, FaWallet, FaSignOutAlt, FaInfoCircle } from 'react-icons/fa';
+import { BiTransfer } from 'react-icons/bi';
 import { createNoise3D } from "simplex-noise";
 import { useWallet } from '@/contexts/WalletContext';
+import xlmLogo from './stellar-xlm-logo.png';
+import xrpLogo from './xrp-xrp-logo.png';
 
 // CoinGecko API types
 interface TokenPrice {
@@ -19,6 +22,13 @@ interface TokenData {
   xrp: number;
   xlmToXrp: number;
   xrpToXlm: number;
+}
+
+interface Token {
+  symbol: string;
+  name: string;
+  logo: string | any; // Accept both string and StaticImageData
+  price: number;
 }
 
 const PageContainer = styled.div`
@@ -225,6 +235,13 @@ const TokenLogo = styled.div`
   color: white;
   font-weight: bold;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 `;
 
 const TokenName = styled.span`
@@ -363,6 +380,225 @@ const DisconnectButton = styled.button`
   }
 `;
 
+const TokenSelector = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 16px;
+  margin-top: 8px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+`;
+
+const TokenOption = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+`;
+
+const TokenSelectorButton = styled.button`
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 12px;
+  padding: 8px 12px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+`;
+
+const BottomNavigation = styled.div`
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(26, 26, 46, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 25px;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  min-width: 320px;
+  max-width: 400px;
+`;
+
+const NavItem = styled.div<{ active?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 8px 12px;
+  border-radius: 16px;
+  background: ${props => props.active ? 'linear-gradient(135deg, #8A2BE2 0%, #9370DB 100%)' : 'transparent'};
+  min-width: 60px;
+  
+  &:hover {
+    background: ${props => props.active ? 'linear-gradient(135deg, #8A2BE2 0%, #9370DB 100%)' : 'rgba(255, 255, 255, 0.1)'};
+    transform: translateY(-2px);
+  }
+`;
+
+const NavText = styled.span<{ active?: boolean }>`
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: ${props => props.active ? 'white' : 'rgba(255, 255, 255, 0.7)'};
+  transition: all 0.3s ease;
+  text-align: center;
+`;
+
+const BalanceView = styled.div`
+  width: 100%;
+  margin-top: 20px;
+`;
+
+const BalanceTitle = styled.h3`
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 16px 0;
+`;
+
+const NetworkToggle = styled.div`
+  display: flex;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 20px;
+  gap: 4px;
+`;
+
+const ToggleButton = styled.button<{ active?: boolean }>`
+  background: ${props => props.active ? 'linear-gradient(135deg, #8A2BE2 0%, #9370DB 100%)' : 'transparent'};
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: ${props => props.active ? 'white' : 'rgba(255, 255, 255, 0.7)'};
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: ${props => props.active ? 'linear-gradient(135deg, #8A2BE2 0%, #9370DB 100%)' : 'rgba(255, 255, 255, 0.1)'};
+  }
+`;
+
+const TokenTable = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+`;
+
+const TableHeader = styled.div`
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+`;
+
+const TableRow = styled.div`
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  align-items: center;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+`;
+
+const TokenCell = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const TokenIcon = styled.div`
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+`;
+
+const AddressCell = styled.div`
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: monospace;
+`;
+
+const TypeCell = styled.div<{ type: 'native' | 'soroban' }>`
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: ${props => props.type === 'native' ? 'rgba(76, 175, 80, 0.2)' : 'rgba(255, 255, 255, 0.1)'};
+  color: white;
+  font-weight: 600;
+`;
+
+const BalanceCell = styled.div`
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+  font-family: monospace;
+`;
+
+const MintButton = styled.button`
+  background: linear-gradient(135deg, #8A2BE2 0%, #9370DB 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 16px;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
+  }
+`;
 
 
 export default function Home() {
@@ -379,6 +615,56 @@ export default function Home() {
   const [fromAmount, setFromAmount] = useState('');
   const [toAmount, setToAmount] = useState('');
   const [isLoadingPrices, setIsLoadingPrices] = useState(true);
+  const [fromToken, setFromToken] = useState<Token>({ symbol: 'XLM', name: 'Stellar Lumens', logo: xlmLogo, price: 0 });
+  const [toToken, setToToken] = useState<Token>({ symbol: 'XRP', name: 'Ripple', logo: xrpLogo, price: 0 });
+  const [showFromTokenSelector, setShowFromTokenSelector] = useState(false);
+  const [showToTokenSelector, setShowToTokenSelector] = useState(false);
+  const [activeTab, setActiveTab] = useState('swap');
+  const [networkType, setNetworkType] = useState<'wrapped' | 'classic'>('classic');
+
+  // Sample balance data
+  const balanceData = [
+    {
+      id: 1,
+      token: 'XLM',
+      icon: '★',
+      address: 'CDLZ...CYSC',
+      type: 'native' as const,
+      balance: '19,768.0494256'
+    },
+    {
+      id: 2,
+      token: 'XTAR',
+      icon: '⭐',
+      address: 'XTAR...1234',
+      type: 'soroban' as const,
+      balance: '0'
+    },
+    {
+      id: 3,
+      token: 'USDC',
+      icon: '$',
+      address: 'USDC...5678',
+      type: 'soroban' as const,
+      balance: '0'
+    },
+    {
+      id: 4,
+      token: 'XRP',
+      icon: '⚡',
+      address: 'XRP...9012',
+      type: 'soroban' as const,
+      balance: '0'
+    },
+    {
+      id: 5,
+      token: 'ARST',
+      icon: '🔵',
+      address: 'ARST...3456',
+      type: 'soroban' as const,
+      balance: '0'
+    }
+  ];
   
   const { isConnected, publicKey, connect, disconnect, isLoading, network, setNetwork } = useWallet();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -453,6 +739,51 @@ export default function Home() {
     return `${address.slice(0, 6)}...${address.slice(-6)}`;
   };
 
+  // Available tokens
+  const availableTokens: Token[] = [
+    { symbol: 'XLM', name: 'Stellar Lumens', logo: xlmLogo, price: tokenData.xlm },
+    { symbol: 'XRP', name: 'Ripple', logo: xrpLogo, price: tokenData.xrp }
+  ];
+
+  // Handle token selection
+  const handleFromTokenSelect = (token: Token) => {
+    if (token.symbol === toToken.symbol) {
+      // Swap tokens if same token selected
+      setToToken(fromToken);
+    }
+    setFromToken(token);
+    setShowFromTokenSelector(false);
+    // Recalculate amounts
+    if (fromAmount) {
+      handleFromAmountChange(fromAmount);
+    }
+  };
+
+  const handleToTokenSelect = (token: Token) => {
+    if (token.symbol === fromToken.symbol) {
+      // Swap tokens if same token selected
+      setFromToken(toToken);
+    }
+    setToToken(token);
+    setShowToTokenSelector(false);
+    // Recalculate amounts
+    if (fromAmount) {
+      handleFromAmountChange(fromAmount);
+    }
+  };
+
+  // Handle swap direction
+  const handleSwapDirection = () => {
+    const tempToken = fromToken;
+    setFromToken(toToken);
+    setToToken(tempToken);
+    
+    // Swap amounts
+    const tempAmount = fromAmount;
+    setFromAmount(toAmount);
+    setToAmount(tempAmount);
+  };
+
   // Fetch token prices from CoinGecko
   const fetchTokenPrices = async () => {
     try {
@@ -493,6 +824,10 @@ export default function Home() {
         xrpToXlm
       });
       
+      // Update token prices
+      setFromToken(prev => ({ ...prev, price: prev.symbol === 'XLM' ? xlmPrice : xrpPrice }));
+      setToToken(prev => ({ ...prev, price: prev.symbol === 'XLM' ? xlmPrice : xrpPrice }));
+      
       console.log('Token prices updated:', { xlmPrice, xrpPrice, xlmToXrp, xrpToXlm });
     } catch (error) {
       console.error('Error fetching token prices:', error);
@@ -514,26 +849,26 @@ export default function Home() {
     
     const numAmount = Number(amount);
     console.log('Calculating with prices:', { 
-      xlmPrice: tokenData.xlm, 
-      xrpPrice: tokenData.xrp, 
+      fromToken: fromToken.symbol,
+      toToken: toToken.symbol,
+      fromPrice: fromToken.price, 
+      toPrice: toToken.price, 
       amount: numAmount, 
       isFrom 
     });
     
     if (isFrom) {
-      // Calculate XLM to XRP using real prices
-      // XLM amount * XLM price / XRP price = XRP amount
-      const xlmValue = numAmount * tokenData.xlm;
-      const xrpAmount = xlmValue / tokenData.xrp;
-      console.log('XLM to XRP calculation:', { xlmValue, xrpAmount });
-      return xrpAmount.toFixed(2);
+      // Calculate from token to to token using real prices
+      const fromValue = numAmount * fromToken.price;
+      const toAmount = fromValue / toToken.price;
+      console.log('From to To calculation:', { fromValue, toAmount });
+      return toAmount.toFixed(2);
     } else {
-      // Calculate XRP to XLM using real prices
-      // XRP amount * XRP price / XLM price = XLM amount
-      const xrpValue = numAmount * tokenData.xrp;
-      const xlmAmount = xrpValue / tokenData.xlm;
-      console.log('XRP to XLM calculation:', { xrpValue, xlmAmount });
-      return xlmAmount.toFixed(2);
+      // Calculate to token to from token using real prices
+      const toValue = numAmount * toToken.price;
+      const fromAmount = toValue / fromToken.price;
+      console.log('To to From calculation:', { toValue, fromAmount });
+      return fromAmount.toFixed(2);
     }
   };
 
@@ -565,12 +900,19 @@ export default function Home() {
     // Here you would implement the actual swap logic
   };
 
+  // Handle navigation tab click
+  const handleNavClick = (tab: string) => {
+    setActiveTab(tab);
+    console.log(`Switched to ${tab} tab`);
+    // Here you would implement navigation logic
+  };
+
   return (
     <PageContainer>
       <Canvas ref={canvasRef} />
       <GlassCard>
         <Header>
-          <Title>Swap</Title>
+          <Title>{activeTab === 'balance' ? 'Balance' : 'Swap'}</Title>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {isConnected && (
               <div style={{ 
@@ -596,6 +938,61 @@ export default function Home() {
             </SettingsButton>
           </div>
         </Header>
+        
+        {/* Balance View */}
+        {activeTab === 'balance' && (
+          <BalanceView>
+            <BalanceTitle>Your token's balance:</BalanceTitle>
+            
+            <NetworkToggle>
+              <ToggleButton 
+                active={networkType === 'wrapped'} 
+                onClick={() => setNetworkType('wrapped')}
+              >
+                Wrapped
+              </ToggleButton>
+              <ToggleButton 
+                active={networkType === 'classic'} 
+                onClick={() => setNetworkType('classic')}
+              >
+                Stellar Classic
+              </ToggleButton>
+            </NetworkToggle>
+            
+            <TokenTable>
+              <TableHeader>
+                <div>#</div>
+                <div>Token</div>
+                <div>Address</div>
+                <div>Type</div>
+                <div>Balance</div>
+              </TableHeader>
+              
+              {balanceData.map((token, index) => (
+                <TableRow key={token.id}>
+                  <div>{index + 1}</div>
+                  <TokenCell>
+                    <TokenIcon style={{ 
+                      background: token.type === 'native' ? '#4CAF50' : '#2196F3' 
+                    }}>
+                      {token.icon}
+                    </TokenIcon>
+                    {token.token}
+                  </TokenCell>
+                  <AddressCell>{token.address}</AddressCell>
+                  <TypeCell type={token.type}>
+                    {token.type === 'native' ? 'Native' : 'Soroban Token'}
+                  </TypeCell>
+                  <BalanceCell>{token.balance}</BalanceCell>
+                </TableRow>
+              ))}
+            </TokenTable>
+            
+            <MintButton>
+              Mint test tokens
+            </MintButton>
+          </BalanceView>
+        )}
         
         {/* Settings Panel */}
         {settingsOpen && (
@@ -649,50 +1046,87 @@ export default function Home() {
           </SettingsPanel>
         )}
 
-        <SwapRow>
-          <SwapBox color="#00d4ff">
+        {/* Swap View */}
+        {activeTab === 'swap' && (
+          <>
+            <SwapRow>
+          <SwapBox color="#00d4ff" style={{ position: 'relative' }}>
             <Label>
               From
             </Label>
             <TokenRow>
-              <TokenLogo>★</TokenLogo>
-              <TokenName>XLM</TokenName>
+              <TokenSelectorButton onClick={() => setShowFromTokenSelector(!showFromTokenSelector)}>
+                <TokenLogo>
+                  {typeof fromToken.logo === 'string' ? fromToken.logo : <img src={fromToken.logo.src} alt={fromToken.symbol} />}
+                </TokenLogo>
+                <TokenName>{fromToken.symbol}</TokenName>
+                <FaChevronDown size={12} />
+              </TokenSelectorButton>
             </TokenRow>
+            {showFromTokenSelector && (
+              <TokenSelector>
+                {availableTokens.map((token) => (
+                  <TokenOption key={token.symbol} onClick={() => handleFromTokenSelect(token)}>
+                    <TokenLogo>
+                      {typeof token.logo === 'string' ? token.logo : <img src={token.logo.src} alt={token.symbol} />}
+                    </TokenLogo>
+                    <TokenName>{token.symbol}</TokenName>
+                  </TokenOption>
+                ))}
+              </TokenSelector>
+            )}
             <Amount 
               type="number" 
-              placeholder="100" 
+              placeholder="0" 
               min="0" 
               step="any"
               value={fromAmount}
               onChange={(e) => handleFromAmountChange(e.target.value)}
             />
             <SubInfo>
-              {isLoadingPrices ? 'Loading...' : `~$${(Number(fromAmount) * tokenData.xlm).toFixed(2)}`}
+              {isLoadingPrices ? 'Loading...' : `~$${(Number(fromAmount) * fromToken.price).toFixed(2)}`}
             </SubInfo>
           </SwapBox>
-          <SwapBox color="#23292f">
+          <SwapBox color="#23292f" style={{ position: 'relative' }}>
             <Label>
               To
             </Label>
             <TokenRow>
-              <TokenLogo>⚡</TokenLogo>
-              <TokenName>XRP</TokenName>
+              <TokenSelectorButton onClick={() => setShowToTokenSelector(!showToTokenSelector)}>
+                <TokenLogo>
+                  {typeof toToken.logo === 'string' ? toToken.logo : <img src={toToken.logo.src} alt={toToken.symbol} />}
+                </TokenLogo>
+                <TokenName>{toToken.symbol}</TokenName>
+                <FaChevronDown size={12} />
+              </TokenSelectorButton>
             </TokenRow>
+            {showToTokenSelector && (
+              <TokenSelector>
+                {availableTokens.map((token) => (
+                  <TokenOption key={token.symbol} onClick={() => handleToTokenSelect(token)}>
+                    <TokenLogo>
+                      {typeof token.logo === 'string' ? token.logo : <img src={token.logo.src} alt={token.symbol} />}
+                    </TokenLogo>
+                    <TokenName>{token.symbol}</TokenName>
+                  </TokenOption>
+                ))}
+              </TokenSelector>
+            )}
             <Amount 
               type="number" 
-              placeholder="25.5" 
+              placeholder="0" 
               min="0" 
               step="any"
               value={toAmount}
               onChange={(e) => handleToAmountChange(e.target.value)}
             />
             <SubInfo>
-              {isLoadingPrices ? 'Loading...' : `~$${(Number(toAmount) * tokenData.xrp).toFixed(2)}`}
+              {isLoadingPrices ? 'Loading...' : `~$${(Number(toAmount) * toToken.price).toFixed(2)}`}
             </SubInfo>
           </SwapBox>
         </SwapRow>
         <SwapIconBox>
-          <SwapIconButton>
+          <SwapIconButton onClick={handleSwapDirection}>
             <FaExchangeAlt size={24} color="white" />
           </SwapIconButton>
         </SwapIconBox>
@@ -711,7 +1145,32 @@ export default function Home() {
             {isLoading ? 'Connecting...' : 'Connect Wallet'}
           </WalletButton>
         )}
+          </>
+        )}
       </GlassCard>
+
+      <BottomNavigation>
+        <NavItem active={activeTab === 'balance'} onClick={() => handleNavClick('balance')}>
+          <FaWallet size={20} />
+          <NavText active={activeTab === 'balance'}>Balance</NavText>
+        </NavItem>
+        <NavItem active={activeTab === 'swap'} onClick={() => handleNavClick('swap')}>
+          <FaExchangeAlt size={20} />
+          <NavText active={activeTab === 'swap'}>Swap</NavText>
+        </NavItem>
+        <NavItem active={activeTab === 'pools'} onClick={() => handleNavClick('pools')}>
+          <FaQuestionCircle size={20} />
+          <NavText active={activeTab === 'pools'}>Pools</NavText>
+        </NavItem>
+        <NavItem active={activeTab === 'bridge'} onClick={() => handleNavClick('bridge')}>
+          <BiTransfer size={20} />
+          <NavText active={activeTab === 'bridge'}>Bridge</NavText>
+        </NavItem>
+        <NavItem active={activeTab === 'info'} onClick={() => handleNavClick('info')}>
+          <FaInfoCircle size={20} />
+          <NavText active={activeTab === 'info'}>Info</NavText>
+        </NavItem>
+      </BottomNavigation>
     </PageContainer>
   );
 }
